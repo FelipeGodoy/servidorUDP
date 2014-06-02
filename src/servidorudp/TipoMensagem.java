@@ -18,5 +18,4 @@ public class TipoMensagem
   static final int ID_MENSAGEM_VENCEDOR_PARTIDA = 4;
   //4#idJogador#pontuacao
   static final int ID_MENSAGEM_VENCEDOR_JOGO = 5;
-  static final int ID_MENSAGEM_ACK = 6;
 }
