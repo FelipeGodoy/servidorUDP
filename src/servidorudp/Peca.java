@@ -16,8 +16,8 @@ public class Peca {
 
     Peca(String partesPeca) {
         String[] itensPartesPeca = partesPeca.split("|");
-        this.parteEsquerda = Integer.parseInt(itensPartesPeca[0]);
-        this.parteDireita = Integer.parseInt(itensPartesPeca[2]);
+        this.parteEsquerda = Integer.parseInt(itensPartesPeca[1]);
+        this.parteDireita = Integer.parseInt(itensPartesPeca[3]);
     }
 
     public String toString() {
@@ -25,7 +25,7 @@ public class Peca {
     }
 
     public boolean equals(Peca p) {
-        if (((this.parteDireita == p.parteDireita) && (this.parteEsquerda == p.parteEsquerda)) || ((this.parteEsquerda == p.parteDireita) && (this.parteEsquerda == p.parteDireita))) {
+        if (((this.parteDireita == p.parteDireita) && (this.parteEsquerda == p.parteEsquerda)) || ((this.parteEsquerda == p.parteDireita) && (this.parteDireita == p.parteEsquerda))) {
             return true;
         }
         return false;

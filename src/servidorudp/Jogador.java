@@ -1,10 +1,11 @@
 package servidorudp;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.*;
+//import java.io.PrintWriter;
+//import java.net.Socket;
 import java.util.ArrayList;
-import socketUDP.*;
+import socketUDP.MySocket;
+//import java.util.Scanner;
 
 /**
  *
@@ -13,18 +14,16 @@ import socketUDP.*;
 public class Jogador {
 
     ArrayList<Peca> pecasDoJogador;
-    int ordem;
     boolean podeJogar;
-    InetAddress ip;
-    int porta;
-    public MySocket socket;
+//    public Socket socket;
 //    Scanner entrada;
-//    PrintWriter saida;
     int pontuacao;
+//    PrintWriter saida;
+    MySocket mySocket;
     static int cont = 0;
     char equipe;
     int id;
-
+    
     Jogador() {
         this.podeJogar = false;
         this.pecasDoJogador = null;
@@ -36,14 +35,17 @@ public class Jogador {
     }
 
     Jogador(MySocket mySocket){
-        this.socket = mySocket;
-        this.ordem = 1;
+        this.mySocket = mySocket;
+        System.out.println("Nova conexão com o cliente");
         this.id = cont;
+        
+        //se o id for par, vai ser da equipe A
+        //if(this.id%2==0)
+          //  this.equipe='A';
+        //else
+          //  this.equipe='B';
+        
         cont ++;
-    }
-
-    int getOrdem() {
-        return this.ordem;
     }
 
     String imprimirPecasJogador() {
