@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Scanner;
+import socketUDP.*;
 
 /**
  *
@@ -17,7 +17,7 @@ public class Jogador {
     boolean podeJogar;
     InetAddress ip;
     int porta;
-//    public Socket socket;
+    public MySocket socket;
 //    Scanner entrada;
 //    PrintWriter saida;
     int pontuacao;
@@ -35,10 +35,8 @@ public class Jogador {
         this.pecasDoJogador = pecasDoJogador;
     }
 
-    Jogador(InetAddress ip, int porta) throws IOException {
-        this.ip = ip;
-        this.porta = porta;
-        System.out.println("Nova conexão com o cliente de IP: " + ip + ", " + porta);
+    Jogador(MySocket mySocket){
+        this.socket = mySocket;
         this.ordem = 1;
         this.id = cont;
         cont ++;

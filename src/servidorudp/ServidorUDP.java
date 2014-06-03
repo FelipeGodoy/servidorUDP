@@ -1,11 +1,14 @@
 package servidorudp;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.*;
+//import java.io.PrintWriter;
+//import java.net.*;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+//import java.util.Scanner;
 import javax.swing.JOptionPane;
+import socketUDP.*;
 
 /**
  *
@@ -19,34 +22,59 @@ public class ServidorUDP {
     int pontuacaoPartida = 0;
     int pontuacaoJogo = 0;
     int quantidadeJogadores = 0;
-    DatagramSocket socketDeEscuta;
+    MyServerSocket socketDeEscuta;
+    Thread thread;
 
     ServidorUDP() throws IOException {
-        socketDeEscuta = new DatagramSocket(3000);
         jogadoresConectados = new ArrayList();
-        try {
-            while (true) {
-//                Socket socketDeConexao = socketDeEscuta.accept();
-                this.quantidadeJogadores++;
-                if (this.quantidadeJogadores < 5) {
-//                    Scanner entrada = new Scanner(socketDeConexao.getInputStream());
-//                    PrintWriter saida = new PrintWriter(socketDeConexao.getOutputStream());
-//                    jogadoresConectados.add(new Jogador(socketDeConexao, entrada, saida));
-                    if (jogadoresConectados.size() == 4) {
-                        this.c = new ControladorJogo(jogadoresConectados);
-                        jogadores = c.getJogadoresOrdenados();
-                        iniciarJogo();
-                    }
-                } else {
-//                    socketDeConexao.close();
+        socketDeEscuta = new MyServerSocket(40000,new MyServerSocketListener() {
+            @Override
+            public void onNewConnection(MySocket mySocket) {
+                quantidadeJogadores++;
+                jogadoresConectados.add(new Jogador(mySocket));
+                System.out.println("Jogador Conectado");
+                if(quantidadeJogadores == 4){
+                    thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                System.out.println("Iniciando o Jogo");
+                                iniciarJogo();
+                            } catch (IOException ex) {
+                                Logger.getLogger(ServidorUDP.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(ServidorUDP.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    });
+                    thread.start();
                 }
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Erro:" + ex.getMessage());
-        }
+        });
+//        try {
+//            boolean loop = true;
+//            while (loop) {
+//                jogadoresConectados.size();
+////                Socket socketDeConexao = socketDeEscuta.accept();
+////                this.quantidadeJogadores++;
+//                if (this.quantidadeJogadores < 5) {
+//                    if (jogadoresConectados.size() == 4) {
+//                        this.c = new ControladorJogo(jogadoresConectados);
+//                        jogadores = c.getJogadoresOrdenados();
+//                        iniciarJogo();
+//                    }
+//                } else {
+////                    socketDeConexao.close();
+//                }
+//            }
+//        } catch (Exception ex) {
+//            JOptionPane.showMessageDialog(null, "Erro:" + ex.getMessage());
+//        }
     }
 
-    private void iniciarJogo() throws IOException {
+    private void iniciarJogo() throws IOException, InterruptedException {
+        this.c = new ControladorJogo(jogadoresConectados);
+        jogadores = c.getJogadoresOrdenados();
         enviarMensagemInicial(this.c);
         
         //TO DO: 
@@ -54,21 +82,21 @@ public class ServidorUDP {
         while (true) {
             for (int i = 0; i < 4; i = (i + 1) % 4) {
                 informarJogadorDaVez(i); 
-//                String jogada = jogadores.get(i).entrada.nextLine(); 
-//                String[] itensJogada = jogada.split("#");
-                //Se o Jogador jogou peça na mesa
-//                if (itensJogada.length > 2) {
-//                    this.c.inserirPecaMesa(new Peca(itensJogada[1]), itensJogada[0], jogadores.get(i));
-//                    informarJogadaParaTodosOsJogadores(itensJogada, jogadores.get(i));
-//                    if (jogadores.get(i).pecasDoJogador.isEmpty()) {
-//                        informarVitoriaPartidaParaTodosOsJogadores(jogadores.get(i).id, itensJogada);
-//                    }       
-//                }
-//                //Se o jogador comprou peças e passou a vez
-//                 else if (itensJogada.length == 2) {
-//                    aumentarNumeroDePecasJogador(itensJogada[1], jogadores.get(i));
-//                    informarQueOJogadorComprouPecas(jogadores.get(i), (itensJogada[1].split(",")).length);
-//                 }
+                String jogada = jogadores.get(i).socket.receberMensagem(); 
+                String[] itensJogada = jogada.split("#");
+//                Se o Jogador jogou peça na mesa
+                if (itensJogada.length > 2) {
+                    this.c.inserirPecaMesa(new Peca(itensJogada[1]), itensJogada[0], jogadores.get(i));
+                    informarJogadaParaTodosOsJogadores(itensJogada, jogadores.get(i));
+                    if (jogadores.get(i).pecasDoJogador.isEmpty()) {
+                        informarVitoriaPartidaParaTodosOsJogadores(jogadores.get(i).id, itensJogada);
+                    }       
+                }
+                //Se o jogador comprou peças e passou a vez
+                 else if (itensJogada.length == 2) {
+                    aumentarNumeroDePecasJogador(itensJogada[1], jogadores.get(i));
+                    informarQueOJogadorComprouPecas(jogadores.get(i), (itensJogada[1].split(",")).length);
+                 }
             }
         }
     }
@@ -78,8 +106,7 @@ public class ServidorUDP {
     }
 
     private void enviarMensagemAoJogador(Jogador j, String mensagem) throws IOException {
-        byte[] dadosDeEnvio = mensagem.getBytes();
-        DatagramPacket pacote = new DatagramPacket(dadosDeEnvio, dadosDeEnvio.length, j.ip, j.porta);
+        j.socket.enviarMensagem(mensagem);
     }
 
     private void informarQueOJogadorComprouPecas(Jogador jogadorQueComprouPeca, int numeroPecasCompradas) throws IOException {
